@@ -32,7 +32,25 @@ def find_post_by_id(post_id):
 
 @app.route('/api/posts', methods=['GET'])
 def get_posts():
-    return jsonify(POSTS)
+    # Get query parameters sort and direction
+    sort_field = request.args.get("sort")
+    direction = request.args.get("direction", "asc")  # asc is default
+
+    # Validate sort_field
+    if sort_field and sort_field not in ("title", "content"):
+        return jsonify({"error": "Invalid sort field. Use 'title' or 'content'."}), 400
+
+    # Validate direction
+    if direction and direction not in ("asc", "desc"):
+        return jsonify({"error": "Invalid direction. Use 'asc' or 'desc'."}), 400
+
+    # If sorting requested, apply sorting
+    sorted_posts = POSTS
+    if sort_field:
+        reverse = direction == "desc"
+        sorted_posts = sorted(POSTS, key=lambda post: post[sort_field].lower(), reverse=reverse)
+
+    return jsonify(sorted_posts)
 
 
 @app.route('/api/posts', methods=['GET', 'POST'])
@@ -89,6 +107,17 @@ def delete_post(id):
 
     # Remove the post from the list
     POSTS.remove(post)
+
+    # logic for confirmation of the deletion (not implemented,
+                                        # not working with interface
+    # user_confirm = input("Are you sure you want to delete this post? (y/n)")
+    # if user_confirm.strip().lower() == 'y':
+    #     POSTS.remove(post)
+    # else:
+    #     abort_message = {
+    #         "message": "No post deleted."
+    #     }
+    #     return jsonify(abort_message), 200
 
     # Return the deleted book successful message
     deleted_message = {
