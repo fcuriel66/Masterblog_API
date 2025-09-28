@@ -21,6 +21,14 @@ def validate_post_content(data):
     return True
 
 
+def find_post_by_id(post_id):
+    """ Find the post with the id `post_id`.
+    If there is no post with this id, return None. """
+    for post in POSTS:
+        if int(post_id) == post["id"]:
+            return post
+    return None
+
 
 @app.route('/api/posts', methods=['GET'])
 def get_posts():
@@ -52,6 +60,24 @@ def add_post():
         # Handle the GET request
         return jsonify(POSTS)
 
+
+@app.route('/api/posts/<int:id>', methods=['DELETE'])
+def delete_post(id):
+    # Find the post with the given ID
+    post = find_post_by_id(id)
+
+    # If the post wasn't found, return a 404 error
+    if post is None:
+        return f'Post with id {id} not found', 404
+
+    # Remove the post from the list
+    POSTS.remove(post)
+
+    # Return the deleted book successful message
+    deleted_message = {
+    "message": f"Post with id {id} has been deleted successfully."
+}
+    return jsonify(deleted_message), 200
 
 @app.errorhandler(400)
 def not_found_error(error):
