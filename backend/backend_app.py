@@ -61,6 +61,23 @@ def add_post():
         return jsonify(POSTS)
 
 
+@app.route('/api/posts/<int:id>', methods=['PUT'])
+def update_post(id):
+    # Find the post with the given ID
+    blog_post = find_post_by_id(id)
+
+    # If the post with provided id wasn't found, return a 404 error
+    if blog_post is None:
+        return f'The Post with id {id} was not found', 404
+
+    # Update the updated or unchanged post
+    updated_post = request.get_json()
+    blog_post.update(updated_post)
+
+    # Return the updated post
+    return jsonify(blog_post), 200
+
+
 @app.route('/api/posts/<int:id>', methods=['DELETE'])
 def delete_post(id):
     # Find the post with the given ID
@@ -78,6 +95,24 @@ def delete_post(id):
     "message": f"Post with id {id} has been deleted successfully."
 }
     return jsonify(deleted_message), 200
+
+
+@app.route("/api/posts/search", methods=["GET"])
+def search_posts():
+    title_query = request.args.get("title", "").strip().lower()
+    content_query = request.args.get("content", "").strip().lower()
+
+    # Filter posts for provided strings if any
+    results = []
+    for post in POSTS:
+        match_title = title_query in post["title"].lower() if title_query else True
+        match_content = content_query in post["content"].lower() if content_query else True
+
+        if match_title and match_content:
+            results.append(post)
+
+    return jsonify(results), 200
+
 
 @app.errorhandler(400)
 def not_found_error(error):
