@@ -10,12 +10,22 @@ POSTS = [
 ]
 
 def validate_post_title(data):
+    """
+    Validates that a string title is included in the post.
+    :param data: dictionary with the post
+    :return: True if the post title is valid. False otherwise.
+    """
     if "title" not in data:
         return False
     return True
 
 
 def validate_post_content(data):
+    """
+    Validates that a string content is included in the post.
+    :param data: dictionary with the post
+    :return: True if the post content is valid. False otherwise.
+    """
     if "content" not in data:
         return False
     return True
@@ -32,6 +42,13 @@ def find_post_by_id(post_id):
 
 @app.route('/api/posts', methods=['GET'])
 def get_posts():
+    """
+    Uses get method to get all posts. Returns a list of dictionaries
+    of the posts. Before returning the posts, the code checks if
+    the query asks for a sorting order.
+    :return: Returns a list of dictionaries ordered by post title or content
+    if required.
+    """
     # Get query parameters sort and direction
     sort_field = request.args.get("sort")
     direction = request.args.get("direction", "asc")  # asc is default
@@ -55,6 +72,14 @@ def get_posts():
 
 @app.route('/api/posts', methods=['GET', 'POST'])
 def add_post():
+    """
+    Uses POST method to get a post from the client. After validation of
+    input (existance/null value) creates a new index (id)
+    and adds a new post to the original list.Returns a list of dictionaries
+    :return: Returns a list of dictionaries including the new post
+    and the code 201. If validation fails, returns the original list
+    of posts.
+    """
     if request.method == 'POST':
         # Get the new post data from the client
         new_post = request.get_json()
@@ -81,6 +106,12 @@ def add_post():
 
 @app.route('/api/posts/<int:id>', methods=['PUT'])
 def update_post(id):
+    """
+    Uses PUT method and the Endpoint /api/posts/<int:id> to update
+    a post entry from the client.
+    :param id: retrieved from the Endpoint
+    :return: a list of dictionaries including the updated post
+    """
     # Find the post with the given ID
     blog_post = find_post_by_id(id)
 
@@ -98,26 +129,17 @@ def update_post(id):
 
 @app.route('/api/posts/<int:id>', methods=['DELETE'])
 def delete_post(id):
-    # Find the post with the given ID
+    """ Takes a post id, check if the post exists and delete the post.
+    :return: deleted message and 200 response code"""
+    # Finds the post with the given ID
     post = find_post_by_id(id)
 
-    # If the post wasn't found, return a 404 error
+    # If the post wasn't found, returns a 404 error
     if post is None:
         return f'Post with id {id} not found', 404
 
-    # Remove the post from the list
+    # Removes the post from the list
     POSTS.remove(post)
-
-    # logic for confirmation of the deletion (not implemented,
-                                        # not working with interface
-    # user_confirm = input("Are you sure you want to delete this post? (y/n)")
-    # if user_confirm.strip().lower() == 'y':
-    #     POSTS.remove(post)
-    # else:
-    #     abort_message = {
-    #         "message": "No post deleted."
-    #     }
-    #     return jsonify(abort_message), 200
 
     # Return the deleted book successful message
     deleted_message = {
@@ -128,6 +150,14 @@ def delete_post(id):
 
 @app.route("/api/posts/search", methods=["GET"])
 def search_posts():
+    """
+    Uses get method and the api/posts/search Endpoint to generate queries
+    for title and content (assuming empty string as default) and uses a
+    simple for loop to iterate over all posts searching for matches to
+    the queries in title and content. Those that match, are added
+    to a result list and displayed.
+    :return: list of dictionaries (posts) that match the query
+    """
     title_query = request.args.get("title", "").strip().lower()
     content_query = request.args.get("content", "").strip().lower()
 
@@ -145,8 +175,8 @@ def search_posts():
 
 @app.errorhandler(400)
 def not_found_error(error):
+    """ General error handler for 400 code"""
     return jsonify({"error": "Bad Request"}), 400
-
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5002, debug=True)
