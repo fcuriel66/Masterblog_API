@@ -74,7 +74,7 @@ def get_posts():
 def add_post():
     """
     Uses POST method to get a post from the client. After validation of
-    input (existance/null value) creates a new index (id)
+    input (existence/null value) creates a new index (id)
     and adds a new post to the original list.Returns a list of dictionaries
     :return: Returns a list of dictionaries including the new post
     and the code 201. If validation fails, returns the original list
@@ -90,9 +90,12 @@ def add_post():
             return jsonify({"error": "Incorrect Post Data, the content "
                                      "is missing from the post"}), 400
         else:
-            # Generate a new ID for the post
-            new_id = max(post['id'] for post in POSTS) + 1
-            new_post['id'] = new_id
+            # Generate a new ID for the post (after )
+            if len(POSTS) == 0:
+                new_post['id'] = 1
+            else:
+                new_id = max(post['id'] for post in POSTS) + 1
+                new_post['id'] = new_id
 
             # Add the new post to our list POSTS
             POSTS.append(new_post)
@@ -108,7 +111,7 @@ def add_post():
 def update_post(id):
     """
     Uses PUT method and the Endpoint /api/posts/<int:id> to update
-    a post entry from the client.
+    a past entry from the client.
     :param id: retrieved from the Endpoint
     :return: a list of dictionaries including the updated post
     """
@@ -117,7 +120,7 @@ def update_post(id):
 
     # If the post with provided id wasn't found, return a 404 error
     if blog_post is None:
-        return f'The Post with id {id} was not found', 404
+        return jsonify({"error": f"Post with id {id} not found"}), 404
 
     # Update the updated or unchanged post
     updated_post = request.get_json()
@@ -136,7 +139,7 @@ def delete_post(id):
 
     # If the post wasn't found, returns a 404 error
     if post is None:
-        return f'Post with id {id} not found', 404
+        return jsonify({"error": f"Post with id {id} not found"}), 404
 
     # Removes the post from the list
     POSTS.remove(post)
